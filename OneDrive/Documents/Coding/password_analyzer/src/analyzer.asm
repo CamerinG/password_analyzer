@@ -14,11 +14,9 @@ section .data
     range_entropy: dd 5.6        ; 5.6 is the difference of the maximum and minimum score log2( 94 * 15) = 10.5 (max) and log2( 10 * 3) = 4.9 (min)
     min_entropy: dd 4.9          ; 4.9 is our min entropy
     score_scale: dd 100.0
+    zero_float: dd 0.0
 
 classify_characters:
-    ; rdi holds the pointer to the password string
-    ; rsi = password
-
     xor rcx, rcx       ; initialize a register as a loop counter (length of password)
     xor rax, rax       ; initialize a counter for uppercase classify_characters
     xor rbx, rbx       ; initialize a counter for the special characters
@@ -28,7 +26,7 @@ classify_characters:
 .loop_start:
     cmp rcx, rsi      ; compare the loop counter to the password length 
     jge .done_classify           ; once the loop counter meets the length of the password we jump to .done
-    movzx rdx, byte [rdi + rcx] ; movzx (move zero extend) - reads smaller value and fills upper bits with zeros, rdi points to the password and rcx points to the index
+    movzx rdx, byte [rdi + rcx] ; movzx (move zero extend) - reads smaller value and fills upper bits with zeros, rdi points to the password and rcx points to the index, rdi holds the pointer to the password string
 
     cmp rdx, 65        ; compare the current character with 'A' (ASCII A = 65)
     jl .not_uppercase   ; if rdx is less than 65 (A) jump to .not_uppercase
@@ -55,7 +53,7 @@ classify_characters:
 
 .not_numeric:           ; we have now ruled out alphanumeric characters completely we know that the character at the current index must be a special character
     inc rbx            ; increment the special character counter
-    jmp .continue_loop  ; and restart the loop
+
 
 .continue_loop:
     inc rcx            ; increments the loop counter rcx which makes the loop index move to the next character
@@ -110,8 +108,8 @@ analyze_password_strength:
     mov r8,  qword [lowercase_count]
     mov r9,  qword [numeric_count]
     mov rbx, qword [special_count]
-    mov rcx, rsi      ; rcx = password length
-    mov r10, r10     ; number of possible characters 
+    mov rcx, rsi      ; rcx = password length, rsi = password
+    xor r10, r10     ; number of possible characters 
 
     cmp rax, 0     ; check to see if there is at least 1 uppercase character
     je .check_lowercase     ; if there are no uppercase characters go directly to check if there are lowercase characters
@@ -155,7 +153,7 @@ analyze_password_strength:
 
 
 score_strength:
-    mov r11, [entropy_value]   ; load previously computed entropy
+    mov r11, qword [entropy_value]   ; load previously computed entropy
     cvtsi2ss xmm1, r11  ; converts integer to scalar single precision (32bit floating point)
 
     movss xmm0, [min_entropy]     ; loading a 32 bit register with the value of x 

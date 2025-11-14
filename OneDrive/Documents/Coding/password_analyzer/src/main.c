@@ -19,7 +19,7 @@ int main() {
     int length = strlen(password);
 
     // Remove newline character if present
-    if (length > 1 && password[length - 1] == '\n') {
+    if (length > 0 && password[length - 1] == '\n') {
         password[length - 1] = '\0';
         length--;
     }
@@ -30,8 +30,8 @@ int main() {
     }
 
     int char_score = classify_characters(password, length);
-    int score = score_strength(password, length);
     int strength = analyze_password_strength(password, length);
+    int score = score_strength(password, length);
 
     const char *grade;
     if (score >= 70) {
