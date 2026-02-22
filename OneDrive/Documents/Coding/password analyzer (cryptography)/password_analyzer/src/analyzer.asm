@@ -163,21 +163,21 @@ analyze_password_strength:
 
 
 score_strength:
-    mov r11, [entropy_value]   ; load previously computed entropy
+    mov r11, qword [entropy_value]   ; load previously computed entropy
     cvtsi2ss xmm1, r11  ; converts integer to scalar single precision (32bit floating point)
 
-    movss xmm0, [min_entropy]     ; loading a 32 bit register with the value of x 
+    movss xmm0, dword [min_entropy]     ; loading a 32 bit register with the value of x 
     subss xmm1, xmm0    ; find the difference of the users pswd entropy and the minimum entropy
     
-    movss xmm0, [range_entropy]     
+    movss xmm0, dword [range_entropy]     
     divss xmm1, xmm0    ; divide the outcome of the numerator with the denominator
     
-    movss xmm2, [score_scale]   ; the score will be scaled out of 100
+    movss xmm2, dword [score_scale]   ; the score will be scaled out of 100
     mulss  xmm1, xmm2 ; multiply by 100 to get a score out of 100
 
-    movss xmm0, [zero_float]
+    movss xmm0, dword [zero_float]
     maxss xmm1, xmm0                ;this compares the outcome in xmm1 to our zero_float (0.0) if xmm1 is less than 0 then 0 will be our lower bound
-    movss xmm0, [score_scale]       ; score_scale = 100, loads into xmm0
+    movss xmm0, dword [score_scale]       ; score_scale = 100, loads into xmm0
     minss xmm1, xmm0                ;compares score with 100 so if it is over 100, our score will be upper bound to 100
 
     cvttss2si rax, xmm1             ; rax will store our final score result
